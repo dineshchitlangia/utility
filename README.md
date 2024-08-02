@@ -5,4 +5,4 @@ The repository contains various utility scripts to do small but useful things.
 
 Example usage: 
 
-`python monitor.py <output_file> <script_path> [<arg1> <arg2> ... <argN>]")`
+`python monitor.py <output_file> <script_path> [<arg1> <arg2> ... <argN>]`
