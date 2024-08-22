@@ -5,7 +5,7 @@ Pre-requisites
 
 Python
 
-`pip instal pandas matplotlib`
+`pip install pandas matplotlib`
 
 [monitory.py](monitor.py) - This script allows you to capture `dstat` in specified intervals for any bash or python script.
 
