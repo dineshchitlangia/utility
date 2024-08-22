@@ -4,9 +4,10 @@ import time
 import sys
 
 class ScriptMonitor:
-    def __init__(self, script_path, text_file, *script_args):
+    def __init__(self, script_path, text_file, interval, *script_args):
         self.script_path = script_path
         self.text_file = text_file
+        self.interval = int(interval)  # Convert interval to integer
         self.script_args = script_args
         self.named_args = self.parse_named_args(script_args)
         self.positional_args = [arg for arg in script_args if not self.is_named_arg(arg)]
@@ -28,7 +29,7 @@ class ScriptMonitor:
         return '=' in arg and (arg.startswith('--') or '-' in arg[2:])
 
     def run_dstat(self):
-        """Runs `dstat -c -m` every 5 seconds and saves the output to a text file."""
+        """Runs `dstat -c -m` at the specified interval and saves the output to a text file."""
         with open(self.text_file, mode='w') as file:
             self.dstat_process = subprocess.Popen(
                 ['dstat', '-c', '--mem-adv'],
@@ -37,13 +38,13 @@ class ScriptMonitor:
                 text=True
             )
             while not self.stop_event.is_set():
-                time.sleep(5)
+                time.sleep(self.interval)
 
             # Terminate dstat process once the user script has finished
             if self.dstat_process:
                 self.dstat_process.terminate()
                 try:
-                    self.dstat_process.wait(timeout=5)  # Give dstat time to terminate
+                    self.dstat_process.wait(timeout=self.interval)  # Give dstat time to terminate
                 except subprocess.TimeoutExpired:
                     self.dstat_process.kill()  # Force kill if not terminated
                     self.dstat_process.wait()  # Ensure termination
@@ -85,17 +86,19 @@ class ScriptMonitor:
         """Starts the monitoring and execution."""
         self.dstat_thread.start()
         self.run_script()
+        time.sleep(self.interval)
         self.stop_event.set()
         self.dstat_thread.join()
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
-        print("Usage: python monitor.py <output_file> <script_path> [<arg1> <arg2> ... <argN>]")
+    if len(sys.argv) < 4:
+        print("Usage: python monitor.py <interval> <output_file> <script_path> [<arg1> <arg2> ... <argN>]")
         sys.exit(1)
 
-    text_file = sys.argv[1]
-    script_path = sys.argv[2]
-    script_args = sys.argv[3:]
+    interval = sys.argv[1]
+    text_file = sys.argv[2]
+    script_path = sys.argv[3]
+    script_args = sys.argv[4:]
 
-    monitor = ScriptMonitor(script_path, text_file, *script_args)
+    monitor = ScriptMonitor(script_path, text_file, interval, *script_args)
     monitor.start()
