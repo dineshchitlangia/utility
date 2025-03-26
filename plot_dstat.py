@@ -32,7 +32,7 @@ def read_dstat_file(file_path):
 
         # Convert columns to numeric with unit handling
         for col in required_columns:
-            if col != 'usr':
+            if col != 'usr' and col != 'sys' and col != 'idl' and col != 'wai' and col != 'stl':
                 data[col] = data[col].apply(parse_memory_value)
             else:
                 data[col] = pd.to_numeric(data[col], errors='coerce').fillna(0)
